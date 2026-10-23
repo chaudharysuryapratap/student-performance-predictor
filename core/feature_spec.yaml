@@ -1,0 +1,10 @@
+{
+  "artifact": "artifacts/model.joblib",
+  "features": [
+    {"name":"Study_Hours_per_Week","type":"number","min":0,"max":168,"unit":"hours per week","required":true,"question":"About how many hours do you study in a typical week?","aliases":["study hours","study","hours per week"],"reportable":true},
+    {"name":"Attendance_Rate","type":"number","min":0,"max":100,"unit":"percent","required":true,"question":"What is your current attendance percentage? You can enter a percentage or attended classes out of total classes.","aliases":["attendance","attended"],"reportable":true},
+    {"name":"Past_Exam_Scores","type":"number","min":0,"max":100,"unit":"percent","required":true,"question":"What was your past exam score? Enter a percentage or marks obtained out of maximum marks.","aliases":["past exam","past score","previous score","previous exam","marks"],"reportable":true},
+    {"name":"Internet_Access_at_Home","type":"category","choices":["Yes","No"],"unit":"","required":true,"question":"Do you have internet access at home?","aliases":["internet","wifi","wi-fi"],"reportable":true},
+    {"name":"Extracurricular_Activities","type":"category","choices":["Yes","No"],"unit":"","required":true,"question":"Do you take part in extracurricular activities?","aliases":["extracurricular","activities","sports","clubs"],"reportable":true}
+  ]
+}
