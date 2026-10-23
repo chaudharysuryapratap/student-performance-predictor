@@ -30,7 +30,10 @@ def strip_pii(text):
         flags=re.I,
     )
     text = re.sub(
-        r"\b(?:roll(?: number| no)?|student ?id|id)\s*[:=#-]?\s*[a-z0-9-]+", " ", text, flags=re.I
+        r"\b(?:roll(?: number| no)?|student ?id|student number|id)(?:\s+is)?\s*[:=#-]?\s*[a-z0-9-]+",
+        " ",
+        text,
+        flags=re.I,
     )
     return text[:2000]
 
@@ -76,7 +79,7 @@ def minimal_text(text):
             words.update(alias.lower().split())
     return " ".join(
         token
-        for token in re.findall(r"-?\d+(?:\.\d+)?|[a-zA-Z-]+|[%/]", strip_pii(text).lower())
+        for token in re.findall(r"[a-zA-Z0-9-]+(?:\.\d+)?|[%/]", strip_pii(text).lower())
         if token in words or re.fullmatch(r"-?\d+(?:\.\d+)?|[%/]", token)
     )
 

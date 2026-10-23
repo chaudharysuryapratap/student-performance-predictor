@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+artifacts/*.joblib
+artifacts/datasets/*/*.joblib
+research/imported/
+.streamlit/secrets.toml
+*.log
+research/*.zip
+research/*paper*.txt
+.env
+.tmp/
+
