@@ -112,7 +112,7 @@ CI runs tests and lint using the included frozen model. It never retrains. The m
 
 ## Privacy and limitations
 
-Training datasets, old dataset-specific models, test predictions, credentials and transcripts are excluded from the published app. Only the primary frozen model and minimal explanation metadata are included. The model is loaded only after verifying its SHA; do not replace it with an untrusted pickle/joblib file.
+At the owner's request, the supplied education training datasets are published in [research/](research/README.md), with source notes and SHA-256 checksums. They are historical project inputs, not submissions collected by this app. Old dataset-specific models, test predictions, credentials and chat transcripts remain excluded. The primary model is loaded only after verifying its SHA; do not replace it with an untrusted pickle/joblib file.
 
 Only validated answers and safe assistant text remain in the Streamlit session. Clear answers resets that state. The browser temporarily holds the currently typed answer, and hosting infrastructure may have its own logs and retention. Distress and PII detection are conservative heuristics, not complete recognition. A real student deployment requires review of the institution's data use, support wording and hosting environment.
 

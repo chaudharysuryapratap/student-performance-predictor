@@ -1,1 +1,3 @@
 artifacts/model.joblib -text
+research/**/*.csv -text
+research/**/*.txt -text
