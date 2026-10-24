@@ -16,6 +16,8 @@ Deployed on Streamlit Community Cloud with Python 3.13. The consent, form, confi
 - Editable confirmation before any score is produced.
 - Exact SHA-256 verification of the original trained model.
 - Model-sensitivity explanations, labelled as associations rather than causes.
+- A results dashboard with a score scale, source-score histogram, signed sensitivity chart, and input comparisons with the training reference.
+- Short form labels with units and expandable help; chat remains available.
 - Optional OpenAI structured extraction with local validation and offline fallback.
 - No application database or transcript storage; logging is disabled by default.
 - Local guards for personal information, instructions to change scores, guarantees and distress.

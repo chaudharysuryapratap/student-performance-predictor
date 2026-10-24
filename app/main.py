@@ -8,13 +8,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import streamlit as st
 
+from app.results import LABELS, render_results
 from core.conversation import Conversation, State
 from core.validation import feature_spec
 
-st.set_page_config(page_title="Student self-check", page_icon="📘", layout="centered")
-st.title("Student self-check")
+st.set_page_config(page_title="Student Performance Predictor", page_icon="📘", layout="wide")
+st.title("Student Performance Predictor")
 st.caption(
-    "A short check-in using the existing performance model. You stay in control of the information you provide."
+    "Enter your academic details, review your answers, and explore your model estimate."
 )
 
 if "self_check" not in st.session_state:
@@ -61,9 +62,7 @@ if session.stopped:
     st.stop()
 
 if session.state == State.DONE:
-    with st.chat_message("assistant"):
-        st.markdown(session.message)
-    st.caption("No historical percentages or validated risk band are available for this model.")
+    render_results(session.result, session.values, session.message)
     st.stop()
 
 mode = st.radio(
@@ -79,7 +78,8 @@ def input_form(prefix, values):
         name = field["name"]
         if field["type"] == "number":
             entries[name] = st.number_input(
-                field["question"],
+                LABELS[name],
+                help=field["question"],
                 min_value=float(field["min"]),
                 max_value=float(field["max"]),
                 value=values.get(name),
@@ -90,7 +90,8 @@ def input_form(prefix, values):
             options = ["Not answered"] + field["choices"]
             selected = options.index(values[name]) if name in values else 0
             entries[name] = st.selectbox(
-                field["question"], options, index=selected, key=f"{prefix}_{name}"
+                LABELS[name], options, index=selected, key=f"{prefix}_{name}",
+                help=field["question"],
             )
             if entries[name] == "Not answered":
                 entries[name] = None
@@ -98,7 +99,7 @@ def input_form(prefix, values):
 
 
 if session.state == State.COLLECTING and mode == "Form":
-    st.subheader("Your answers")
+    st.subheader("Your academic profile")
     st.caption(
         "Use known values. If you do not know an answer, pause and check your records; it will not be guessed."
     )

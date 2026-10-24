@@ -17,5 +17,5 @@ def test_cloud_entrypoint(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "none")
     app = AppTest.from_file("streamlit_app.py", default_timeout=30).run()
     assert not app.exception
-    assert any("Student self-check" in title.value for title in app.title)
+    assert any("Student Performance Predictor" in title.value for title in app.title)
     assert app.button[0].disabled
