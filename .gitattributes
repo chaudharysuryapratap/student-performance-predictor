@@ -1,3 +1,4 @@
 artifacts/model.joblib -text
+models/band_evidence.json -text
 research/**/*.csv -text
 research/**/*.txt -text

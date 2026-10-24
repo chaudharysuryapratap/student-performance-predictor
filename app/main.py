@@ -39,7 +39,7 @@ if session.state == State.CONSENT:
         "This is an estimate from limited, self-reported data, not a prediction of your result. A mentor or faculty member is the right person to talk to."
     )
     st.write(
-        "Nothing is saved to a student database or transcript by this app. Your validated answers stay in this browser session until you clear them. The model was trained on public demonstration data; risk bands have not been validated."
+        "Nothing is saved to a student database or transcript by this app. Your validated answers stay in this browser session until you clear them. Demo risk bands use the dataset's passing mark and an interval calibrated on demonstration data. They have not been validated on your college's students."
     )
     if provider == "openai":
         st.warning(

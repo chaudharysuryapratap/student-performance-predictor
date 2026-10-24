@@ -7,6 +7,7 @@ import pandas as pd
 import streamlit as st
 
 from core.explanation import DISCLAIMER
+from core.risk_bands import MEANINGS, load_policy
 from core.validation import ROOT, feature_spec
 
 LABELS = {
@@ -63,6 +64,24 @@ def sensitivity_chart(drivers):
     return (bars + zero).properties(height=190)
 
 
+def score_interval_chart(result):
+    data = pd.DataFrame({"Score": [result.score], "Lower": [result.interval_low],
+                         "Upper": [result.interval_high], "Passing mark": [result.passing_score],
+                         "Profile": ["Confirmed estimate"]})
+    base = alt.Chart(data).encode(y=alt.Y("Profile:N", axis=None, title=None))
+    scale = alt.Scale(domain=[0, 100])
+    interval = base.mark_rule(color="#475569", strokeWidth=5).encode(
+        x=alt.X("Lower:Q", scale=scale, title="Exam score / 100"), x2="Upper:Q",
+        tooltip=[alt.Tooltip("Lower:Q", format=".2f"), alt.Tooltip("Upper:Q", format=".2f")])
+    dot = base.mark_point(size=160, filled=True, opacity=1,
+                          color={"High": "#dc2626", "Medium": "#d97706", "Low": "#0f766e"}[result.band]).encode(
+        x=alt.X("Score:Q", scale=scale, title="Exam score / 100"),
+        tooltip=[alt.Tooltip("Score:Q", format=".2f")])
+    passing = base.mark_tick(orient="vertical", size=65, thickness=2, color="#334155").encode(
+        x=alt.X("Passing mark:Q", scale=scale, title="Exam score / 100"), tooltip=["Passing mark:Q"])
+    return (interval + dot + passing).properties(height=110)
+
+
 def render_results(result, values, message):
     metadata = json.loads((ROOT / "models/metadata.json").read_text())
     scores = source_scores()
@@ -70,24 +89,43 @@ def render_results(result, values, message):
     score_col, calibration_col = st.columns(2)
     score_col.metric("Estimated exam score", f"{result.score:.2f} / 100")
     calibration_col.metric("Risk band", result.band)
+    st.caption("Interval-based demo band · Passing mark: 60 / 100")
+    st.write(MEANINGS[result.band])
+    st.warning("Demonstration only. The Low band has just two test records; no band guarantees an outcome.")
     st.info(DISCLAIMER)
     overview, sensitivity, inputs = st.tabs([
         "Score overview", "Model sensitivity", "Your inputs"
     ])
     with overview:
         st.markdown("#### Your estimate on the score scale")
-        point = pd.DataFrame({"Score": [result.score], "Row": ["Model estimate"]})
-        base = alt.Chart(point).encode(
-            x=alt.X("Score:Q", scale=alt.Scale(domain=[0, 100]), title="Exam score / 100"),
-            y=alt.Y("Row:N", title=None, axis=None),
-            tooltip=[alt.Tooltip("Score:Q", format=".2f")],
+        point = pd.DataFrame({"Score": [result.score]})
+        policy = load_policy(result.model_version)
+        interval_spec = score_interval_chart(result).to_dict()
+        interval_rows = next(iter(interval_spec.pop("datasets").values()))
+        interval_spec.pop("data", None)
+        # Inline each tiny layer to avoid Streamlit 1.45's named-dataset update failure.
+        for layer in interval_spec["layer"]:
+            layer["data"] = {"values": interval_rows}
+        st.vega_lite_chart(spec=interval_spec, use_container_width=True, key="demo_interval_chart")
+        st.write(f"**Demo score interval: {result.interval_low:.2f}–{result.interval_high:.2f} / 100**")
+        st.caption(
+            "Coloured dot: estimate (red High, amber Medium, teal Low). Dark segment: score interval. Vertical line: passing mark. "
+            "High: interval entirely below the mark; Medium: crosses the mark; Low: entirely at or above it. "
+            "Band boundaries use unrounded values; displayed values are rounded."
         )
-        st.altair_chart(
-            (base.mark_bar(size=16, color="#e0e7ff") +
-             base.mark_point(size=170, filled=True, color=ACCENT)).properties(height=85),
-            use_container_width=True,
-        )
-        st.caption("This score is not a pass probability. No validated risk thresholds are applied.")
+        with st.expander("How these demo bands were evaluated"):
+            st.write(
+                f"The existing interval used {policy['calibration_records']} separate calibration records "
+                f"with nominal coverage {policy['nominal_coverage']:.0%}. It covered "
+                f"{policy['test_interval_covered']} of {policy['test_records']} held-out recorded scores. "
+                "This is population-level interval evidence, not your individual chance of passing."
+            )
+            st.dataframe(pd.DataFrame([
+                {"Demo band": band, "Test records": row["records"],
+                 "Recorded scores below pass mark": row["below_pass_mark"]}
+                for band, row in policy["test_bands"].items()
+            ]), hide_index=True, use_container_width=True)
+            st.caption("These test records have already been inspected. A fresh college dataset is needed for external validation.")
         st.markdown("#### Where scores appear in the source dataset")
         if scores.empty:
             st.warning("Source score data is unavailable. The confirmed model estimate is still shown above.")

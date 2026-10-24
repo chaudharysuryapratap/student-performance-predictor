@@ -1,0 +1,33 @@
+{
+  "method": "split_conformal_interval_demo_v1",
+  "passing_score": 60.0,
+  "interval_radius": 6.260760806936638,
+  "nominal_coverage": 0.9,
+  "probability_calibrated": false,
+  "model_sha256": "bac928bd1d51720a53178accaffee54ad1004e372fcfb72ad2c35303382c4ed4",
+  "source_sha256": "d08d46aa5e22acca5720c166f7b620f958aa005752e3e2e7870675d0ce37dee2",
+  "original_report_sha256": "ac93df020c08c93ecca8d063eb95e0d18027d7f87f8aa1e3735b2419bbc24fa8",
+  "calibration_records": 100,
+  "test_records": 100,
+  "test_interval_covered": 89,
+  "test_bands": {
+    "High": {
+      "records": 40,
+      "below_pass_mark": 38
+    },
+    "Medium": {
+      "records": 58,
+      "below_pass_mark": 37
+    },
+    "Low": {
+      "records": 2,
+      "below_pass_mark": 0
+    }
+  },
+  "scope": "Public demonstration dataset only; not validated on college records.",
+  "limitations": [
+    "The Low band has very little test support.",
+    "Marginal interval coverage is not an individual passing probability.",
+    "The test set has been inspected; it is not a fresh future validation set."
+  ]
+}

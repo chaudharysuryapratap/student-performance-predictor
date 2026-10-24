@@ -24,7 +24,13 @@ Deployed on Streamlit Community Cloud with Python 3.13. The consent, form, confi
 
 ## What the result means
 
-The existing model is a Random Forest **regressor** trained on a public demonstration dataset. It produces an exam-score estimate. It has no validated failure-probability calibration or Low/Medium/High risk mapping, so the app displays **Risk band: Not established** and marks the result uncertain.
+The existing model is a Random Forest **regressor** trained on a public demonstration dataset. It produces an exam-score estimate. Demo risk bands use the dataset's **60/100 passing mark** and the model's existing split-conformal score interval:
+
+- **High:** the entire interval is below 60.
+- **Medium:** the interval crosses 60, including an upper endpoint exactly at 60.
+- **Low:** the entire interval is at or above 60.
+
+These are interval-based demo categories, not calibrated failure probabilities or validated college outcomes. All results remain marked uncertain. The original calibration radius is about 6.26 score points; the rules use full precision. On the existing 100-record test split, the interval covered 89 recorded scores. High contained 40 records (38 below the pass mark), Medium 58 (37 below), and Low just 2 (none below). That tiny Low group cannot establish reliable low-risk performance. See [band evidence](docs/risk_bands.md).
 
 The dataset's observed final scores ranged from 50 to 77. Performance on actual college students has not been established. Every result says that it is an estimate from limited self-reported data, not a prediction of the student's result, and directs the student to a mentor or faculty member.
 
@@ -86,7 +92,7 @@ The app reads process environment variables. `.env.example` is documentation and
 
 OpenAI mode sends only filtered academic tokens from the current answer. Provider suggestions require validation and independent local parsing evidence. No scores, transcripts, names or identity fields are sent. Provider failures fall back to the rule parser. Final replies and questions use fixed templates; generated final-result wording is disabled. Live provider quality has not been verified.
 
-`core/feature_spec.yaml` and `core/bands.yaml` use JSON syntax, a valid subset of YAML. Questions, aliases and input bounds can be edited while preserving the frozen model's feature names, order and types. Band thresholds remain disabled until a reviewed calibration contract exists; editing a YAML file does not validate risk bands.
+`core/feature_spec.yaml` and `core/bands.yaml` use JSON syntax, a valid subset of YAML. Questions, aliases and input bounds can be edited while preserving the frozen model's feature names, order and types. The band method uses checksum-verified evidence bound to the model SHA. Arbitrary threshold overrides and probability calibration remain disabled. Changing the passing rule requires a new evidence review; a YAML edit alone does not validate a mapping.
 
 ## Project layout
 

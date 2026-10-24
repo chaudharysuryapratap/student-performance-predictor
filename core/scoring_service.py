@@ -10,6 +10,7 @@ import joblib
 import pandas as pd
 
 from core.drivers import top_drivers
+from core.risk_bands import METHOD, assess_band, load_policy
 from core.validation import ROOT, band_config, feature_spec, validate
 
 
@@ -21,6 +22,10 @@ class ScoreResult:
     drivers: tuple
     model_version: str
     calibration_available: bool
+    interval_low: float
+    interval_high: float
+    passing_score: float
+    nominal_coverage: float
 
 
 def score(features):
@@ -41,11 +46,15 @@ def score(features):
     metadata = json.loads((ROOT / "models/metadata.json").read_text())
     config = band_config()
     if config["calibration_available"] or config["thresholds"]:
-        raise ValueError(
-            "This artifact has no reviewed risk mapping. Risk thresholds cannot be activated by configuration alone."
-        )
+        raise ValueError("Arbitrary thresholds and failure-probability calibration are unsupported.")
+    if config.get("method") != METHOD:
+        raise ValueError("Unsupported risk band method.")
+    policy = load_policy(digest)
+    assessment = assess_band(value, policy)
     drivers = tuple(top_drivers(model, frame, metadata.get("reference", {}), value))
     if os.getenv("ENABLE_LOGGING", "false").lower() == "true":
         numeric = {k: v for k, v in clean.items() if isinstance(v, (int, float))}
         logging.getLogger("student_self_check.numeric").warning(json.dumps(numeric))
-    return ScoreResult(value, config["unmapped_band"], True, drivers, digest, False)
+    return ScoreResult(value, assessment.band, True, drivers, digest, False,
+                       assessment.lower, assessment.upper, policy["passing_score"],
+                       policy["nominal_coverage"])

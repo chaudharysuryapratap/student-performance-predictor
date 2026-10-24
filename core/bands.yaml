@@ -1,7 +1,8 @@
 {
   "calibration_available": false,
-  "evidence": "",
+  "method": "split_conformal_interval_demo_v1",
+  "evidence": "models/band_evidence.json",
   "thresholds": [],
-  "unmapped_band": "Not established",
-  "support_message": "Please pause this self-check and contact someone you trust or your college counselling service. If you may act on thoughts of harming yourself or are in immediate danger, contact local emergency services or go to the nearest emergency department."
+  "support_message": "Please pause this self-check and contact someone you trust or your college counselling service. If you may act on thoughts of harming yourself or are in immediate danger, contact local emergency services or go to the nearest emergency department.",
+  "evidence_sha256": "3cfb544066d59629e035db0d8526122417b1cdfd122a5c715aff2e957c25ae51"
 }

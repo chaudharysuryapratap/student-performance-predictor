@@ -92,7 +92,9 @@ def test_confirm_required_and_deterministic():
     assert c.history == list(State)
     assert c.result == score(SAMPLE) == score(SAMPLE)
     assert c.result.calibration_available is False
-    assert c.result.band == "Not established"
+    assert c.result.band == "High"
+    assert c.result.passing_score == 60
+    assert c.result.interval_low < c.result.score < c.result.interval_high < 60
     assert c.result.uncertain
 
 
@@ -181,7 +183,7 @@ def test_reply_numbers_and_guard():
     text = reply(result, SAMPLE)
     permitted = {Decimal(f"{result.score:.2f}")} | {
         Decimal(f"{d['difference']:.2f}") for d in result.drivers
-    }
+    } | {Decimal(f"{v:.2f}") for v in [result.interval_low, result.interval_high, result.passing_score]}
     assert numbers(text) <= permitted
     assert DISCLAIMER in text
     assert safe_softening(text + " You will pass with 99%.", result, SAMPLE) == text

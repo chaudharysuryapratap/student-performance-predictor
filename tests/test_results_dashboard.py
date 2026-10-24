@@ -28,6 +28,8 @@ def test_dashboard_only_after_confirmation(monkeypatch):
     app.run()
     assert not app.exception
     assert app.metric[0].value == f"{session.result.score:.2f} / 100"
+    assert app.metric[1].value in {"High", "Medium", "Low"}
+    assert any("Demo score interval" in item.value for item in app.markdown)
     assert len(app.get("arrow_vega_lite_chart")) == 6
     assert any("outside" in item.value for item in app.warning)
     monkeypatch.setattr("app.results.source_scores", lambda: pd.DataFrame())
