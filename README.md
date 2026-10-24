@@ -2,6 +2,10 @@
 
 A student self-check built with **Streamlit and a frozen scikit-learn model**. Students can answer through a chat-style interface or a plain form, review and correct their inputs, and receive a deterministic model estimate.
 
+[Open the live app](https://surya-student-performance-predictor.streamlit.app/)
+
+Deployed on Streamlit Community Cloud with Python 3.13. The consent, form, confirmation and scoring flow was verified with synthetic inputs on October 24, 2026.
+
 ![Self-check preview](docs/screenshots/self-check.png)
 
 ## Features
