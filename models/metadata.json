@@ -1,0 +1,25 @@
+{
+  "reference": {
+    "Study_Hours_per_Week": 25.0,
+    "Attendance_Rate": 76.99059602057065,
+    "Past_Exam_Scores": 75.0,
+    "Internet_Access_at_Home": "No",
+    "Extracurricular_Activities": "No"
+  },
+  "ranges": {
+    "Study_Hours_per_Week": [
+      10.0,
+      39.0
+    ],
+    "Attendance_Rate": [
+      50.13554497071648,
+      99.86277673841973
+    ],
+    "Past_Exam_Scores": [
+      50.0,
+      100.0
+    ]
+  },
+  "model_sha256": "bac928bd1d51720a53178accaffee54ad1004e372fcfb72ad2c35303382c4ed4",
+  "source": "Public demonstration dataset; not validated on college records."
+}

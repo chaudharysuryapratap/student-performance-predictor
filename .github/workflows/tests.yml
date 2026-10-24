@@ -1,4 +1,4 @@
-name: Verify predictor
+name: Verify student self-check
 on: [push, pull_request]
 jobs:
   test:
@@ -9,7 +9,7 @@ jobs:
         with:
           python-version: '3.13'
           cache: pip
-      - run: pip install -r requirements.txt
-      # The self-check's model is frozen. Provision the original locked artifacts
-      # and protected data privately before enabling CI; never retrain in CI.
+      - run: pip install -r requirements-dev.txt
+      - run: python -m ruff check .
+      # The exact frozen artifact is committed. No training runs in CI.
       - run: python -m pytest -q

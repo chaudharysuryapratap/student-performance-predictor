@@ -1,64 +1,125 @@
-# Student self-check around a frozen model
+# Student Performance Predictor
 
-A consent-first Streamlit form and chat around the existing student-performance model. The model, training code and data are read-only. No training, artifact conversion or model export is part of this application.
+A student self-check built with **Streamlit and a frozen scikit-learn model**. Students can answer through a chat-style interface or a plain form, review and correct their inputs, and receive a deterministic model estimate.
 
-## Run
+![Self-check preview](docs/screenshots/self-check.png)
 
-Use Python 3.13 and the existing frozen artifact at `artifacts/model.joblib`, its original `artifacts/report.json`, and `models/model.lock`. Install pinned dependencies in a virtual environment:
+## Features
 
-```powershell
+- Consent before collecting information.
+- Chat and form modes using one feature specification and scoring service.
+- Rule-based handling of percentages and fractions such as `18/30`.
+- Editable confirmation before any score is produced.
+- Exact SHA-256 verification of the original trained model.
+- Model-sensitivity explanations, labelled as associations rather than causes.
+- Optional OpenAI structured extraction with local validation and offline fallback.
+- No application database or transcript storage; logging is disabled by default.
+- Local guards for personal information, instructions to change scores, guarantees and distress.
+
+## What the result means
+
+The existing model is a Random Forest **regressor** trained on a public demonstration dataset. It produces an exam-score estimate. It has no validated failure-probability calibration or Low/Medium/High risk mapping, so the app displays **Risk band: Not established** and marks the result uncertain.
+
+The dataset's observed final scores ranged from 50 to 77. Performance on actual college students has not been established. Every result says that it is an estimate from limited self-reported data, not a prediction of the student's result, and directs the student to a mentor or faculty member.
+
+## Run locally
+
+Use **Python 3.13**. The original model is included byte-for-byte; no training or downloads are needed.
+
+```bash
+git clone https://github.com/chaudharysuryapratap/student-performance-predictor.git
+cd student-performance-predictor
 python -m venv .venv
-.venv\Scripts\python -m pip install -r requirements.txt
-$env:LLM_PROVIDER="none"
-.venv\Scripts\python -m streamlit run app/main.py --server.address 127.0.0.1 --server.port 8502
 ```
 
-The default is form-first and entirely offline. Choose Chat in the app or set `LLM_PROVIDER=rules` for chat-first offline mode. `LLM_PROVIDER=mock` uses the same deterministic local extraction for tests. The previous demonstration remains available through `app.py` on its existing port.
+Activate `.venv` using `.venv\Scripts\Activate.ps1` on Windows or `source .venv/bin/activate` on macOS/Linux, then:
 
-Do not rerun `train.py` or `train_datasets.py`: that would invalidate the frozen contract. If artifacts are missing, obtain the exact original files. The self-check refuses a changed model hash. Protected files are checked by the test suite. The legacy CI training step has been removed; the original protected assets need private provisioning before hosted CI can run. No real student datasets or transcripts are added by the self-check work.
+```bash
+python -m pip install -r requirements.txt
+python -m streamlit run streamlit_app.py
+```
 
-## What it collects and returns
+Open the local URL printed by Streamlit. `streamlit run app/main.py` is an equivalent entry point.
 
-Only the existing five inputs: study hours per week, attendance percentage, past exam percentage, internet access and extracurricular activities. All answers are required; unknown answers remain missing. Fractions such as `18/30` or `18 by 30` are converted to percentages, with obtained <= maximum checks. No names, roll numbers or contacts are requested.
+The default `LLM_PROVIDER=none` is form-first and offline. Select Chat in the app to use local parsing, or set `LLM_PROVIDER=rules` before starting for chat-first offline mode. A hosted operator can set the root-level secret `LLM_PROVIDER = "rules"` for that same behavior.
 
-Consent -> collecting -> confirming -> scoring -> explaining -> done. The state machine chooses the missing field and requires review before inference. Students can correct answers in the confirmation form. Scoring is deterministic and the LLM cannot supply a score or band.
+## Deploy on Streamlit Community Cloud
 
-**This artifact predicts a continuous exam score, not a failure probability. No validated risk-band or historical probability mapping exists.** V1 shows the model score, `Risk band: Not established`, and an uncertainty flag. It does not invent Low/Medium/High thresholds. See `docs/model_contract.md` and `docs/OPEN_QUESTIONS.md`.
+1. Sign in at [share.streamlit.io](https://share.streamlit.io/) using the GitHub account with access to this repository.
+2. Select **Create app** and use the repository `chaudharysuryapratap/student-performance-predictor`.
+3. Set branch to **main** and main file path to **streamlit_app.py**.
+4. In **Advanced settings**, choose **Python 3.13**. No API key is needed for offline mode.
+5. Deploy and verify consent, form/chat collection, confirmation and the final estimate.
 
-Every result includes the limited self-report disclaimer and points students to a mentor or faculty member. Model-sensitivity drivers use changes relative to the existing training reference, not SHAP or causal explanations.
+For a private repository, Streamlit must already have access to that repository. Keep any secrets in Streamlit's secrets settings, never in Git. See the [official deployment guide](https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy).
+
+## Model inputs
+
+| Input | Accepted values |
+|---|---|
+| Study hours per week | Number from 0 to 168 |
+| Attendance rate | Percentage from 0 to 100 |
+| Past exam score | Percentage from 0 to 100 |
+| Internet access at home | Yes / No |
+| Extracurricular activities | Yes / No |
+
+All inputs are required. Unknown values are re-asked rather than guessed. Names, roll numbers and contacts are not requested. The broad input limits do not establish training coverage.
 
 ## Configuration
 
-`.env.example` documents process environment variables; the app does not automatically load `.env` files.
+The app reads process environment variables. `.env.example` is documentation and is not loaded automatically. Streamlit Community Cloud can expose root-level secrets as environment variables.
 
 | Variable | Default | Purpose |
 |---|---|---|
 | LLM_PROVIDER | none | none, rules, mock or openai |
-| OPENAI_MODEL | unset | Operator-selected model supporting strict JSON-schema output |
-| OPENAI_API_KEY | unset | Needed only for optional OpenAI extraction |
-| ENABLE_LOGGING | false | If true, log validated numeric inputs only; consent discloses this |
-| SUPPORT_MESSAGE | generic local support wording | Institution-reviewed distress response; no fabricated phone numbers |
-| RUN_LLM_INTEGRATION | false | Explicit opt-in for the live integration test |
+| OPENAI_MODEL | unset | A model supporting strict JSON-schema output |
+| OPENAI_API_KEY | unset | Optional OpenAI extraction only |
+| ENABLE_LOGGING | false | If enabled, logs validated numeric inputs only; consent discloses this |
+| SUPPORT_MESSAGE | Generic support wording | Institution-reviewed distress response |
+| RUN_LLM_INTEGRATION | false | Explicit opt-in for the live-provider test |
 
-For optional OpenAI extraction, set provider/model/key in the environment before starting Streamlit. The consent screen discloses external processing. The adapter uses strict structured output generated from feature_spec; errors fall back to the rule parser. Only allowlisted academic tokens from the current answer are sent, never raw free text or a transcript. Provider values also need independent local parsing evidence. This deliberately limits extraction to supported patterns; ambiguous language triggers a re-ask. No live API request was required for local tests.
+OpenAI mode sends only filtered academic tokens from the current answer. Provider suggestions require validation and independent local parsing evidence. No scores, transcripts, names or identity fields are sent. Provider failures fall back to the rule parser. Final replies and questions use fixed templates; generated final-result wording is disabled. Live provider quality has not been verified.
 
-Question phrasing and final replies use templates. The adapter exposes phrasing/softening interfaces but V1 does not use generated result wording. An optional softening guard rejects changed templates, unapproved numbers or guarantees. This keeps result interpretation under code control.
+`core/feature_spec.yaml` and `core/bands.yaml` use JSON syntax, a valid subset of YAML. Questions, aliases and input bounds can be edited while preserving the frozen model's feature names, order and types. Band thresholds remain disabled until a reviewed calibration contract exists; editing a YAML file does not validate risk bands.
 
-`core/feature_spec.yaml` and `core/bands.yaml` use the JSON subset of YAML, parsed with Python's standard library. Edit questions, aliases and bounds while preserving model feature names, order and types. No unsupported feature may be added. `bands.yaml` has no thresholds: enabling thresholds is rejected until a reviewed calibration contract exists. The YAML file cannot itself establish validity.
+## Project layout
 
-## Privacy and safety
+```text
+streamlit_app.py           Cloud entry point
+app/main.py               Streamlit presentation
+core/conversation.py      Consent and confirmation state machine
+core/validation.py        Shared field validation
+core/parsing.py            Local input extraction
+core/scoring_service.py   Deterministic read-only inference
+core/safety.py            Local privacy and distress guards
+core/llm/                 Offline/mock and optional OpenAI adapters
+artifacts/model.joblib    Original frozen model, unchanged
+models/model.lock         Model SHA-256
+models/metadata.json      Reference values only; no training records or split IDs
+tests/                    Synthetic flow and boundary tests
+docs/                     Model contract, open questions and verification
+```
 
-No database, transcript file or automatic persistence. Only validated values and safe assistant text stay in Streamlit session state. Clear answers removes the self-check and widgets. The client temporarily holds the currently typed answer as part of normal browser interaction; the app removes submitted raw text from its state and stores no transcript. Application-level logs contain no free text; reverse-proxy or hosting infrastructure must be reviewed separately before deployment.
+## Tests
 
-Local distress detection stops scoring, clears collected answers and shows SUPPORT_MESSAGE. Instruction/guarantee requests cannot set scores. PII stripping plus an outbound academic-token allowlist prevent arbitrary names or identifiers from reaching the extraction provider. These are conservative heuristics, not complete distress or PII recognition. No helpline numbers are invented.
-
-## Verify
-
-```powershell
+```bash
+python -m pip install -r requirements-dev.txt
 python -m pytest -q
 python -m ruff check .
 ```
 
-Ruff is a development tool; install the pinned `requirements-dev.txt`. Tests use synthetic self-check examples, mocked provider requests, real read-only inference, UI form/chat flows and SHA checks. Legacy dataset tests still exercise the existing public demonstration files. They do not authorize retraining or copying new student data into the repository.
+CI runs tests and lint using the included frozen model. It never retrains. The model hash check always runs. A complete audit of the excluded original training workspace runs only locally when those private files are present. The live OpenAI test is skipped unless credentials, model and explicit opt-in are configured.
 
-The optional live test is marked `llm_integration` and skipped without explicit opt-in and credentials. No public deployment, institution validation or live LLM quality claim is made.
+## Privacy and limitations
+
+Training datasets, old dataset-specific models, test predictions, credentials and transcripts are excluded from the published app. Only the primary frozen model and minimal explanation metadata are included. The model is loaded only after verifying its SHA; do not replace it with an untrusted pickle/joblib file.
+
+Only validated answers and safe assistant text remain in the Streamlit session. Clear answers resets that state. The browser temporarily holds the currently typed answer, and hosting infrastructure may have its own logs and retention. Distress and PII detection are conservative heuristics, not complete recognition. A real student deployment requires review of the institution's data use, support wording and hosting environment.
+
+## Research
+
+- [Amr Maree: Student Performance Prediction dataset](https://www.kaggle.com/datasets/amrmaree/student-performance-prediction) — original public demonstration data; listed as CC BY 4.0.
+- [Boujmiraz et al., 2026](https://doi.org/10.1016/j.caeai.2026.100548) — review of student-performance prediction and explainability.
+- [Chen et al., 2023](https://doi.org/10.1109/ACCESS.2023.3335985) — educational data-mining literature reference.
+
+These sources inform the project; their reported accuracy is not claimed for this app. The model and training assets remain unchanged. See [model contract](docs/model_contract.md), [open questions](docs/OPEN_QUESTIONS.md), and [verification](docs/self_check_verification.md).

@@ -38,7 +38,7 @@ def score(features):
         raise ValueError("The feature specification does not match the frozen model.")
     frame = pd.DataFrame([[clean[name] for name in names]], columns=names)
     value = float(model.predict(frame)[0])
-    metadata = json.loads((ROOT / "artifacts/report.json").read_text())
+    metadata = json.loads((ROOT / "models/metadata.json").read_text())
     config = band_config()
     if config["calibration_available"] or config["thresholds"]:
         raise ValueError(

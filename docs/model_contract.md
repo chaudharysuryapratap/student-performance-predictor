@@ -21,3 +21,5 @@ The existing report has a split-conformal absolute-residual interval radius and 
 The deterministic service returns the model's exact score, model SHA, uncertainty flag, band, calibration flag and optional model-sensitivity drivers. Sensitivity drivers replace one feature at a time with the frozen training reference from the existing report. They are not SHAP, additive explanations, causes or study prescriptions.
 
 Every result states: it is an estimate from limited self-reported data, not a prediction of the student's result, and a mentor or faculty member is the right person to talk to.
+
+Deployment packaging: the original model is included byte-for-byte. Runtime explanation reference values are copied into `models/metadata.json` without training records, partition IDs or predictions. The original report, datasets, training scripts and other dataset artifacts remain untouched locally and are not published. The model hash check runs everywhere; the complete protected-workspace audit runs only in the original workspace where `train.py` and all protected assets exist.

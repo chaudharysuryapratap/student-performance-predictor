@@ -3,6 +3,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 artifacts/*.joblib
+!artifacts/model.joblib
 artifacts/datasets/*/*.joblib
 research/imported/
 .streamlit/secrets.toml
@@ -11,4 +12,10 @@ research/*.zip
 research/*paper*.txt
 .env
 .tmp/
+research/
+artifacts/report.json
+artifacts/test_predictions.csv
+artifacts/datasets/
+train.py
+train_datasets.py
 
